@@ -7,13 +7,35 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @all_ratings = Movie.all_ratings
-    if params[:ratings].nil?
-      @ratings_to_show = []
-    else 
-      @ratings_to_show = params[:ratings].keys
+    @sorted = params[:sort] || session[:sort]
+    if @sorted == 'titles'
+      order = { title: :asc } 
     end
-    @movies = Movie.with_ratings(@ratings_to_show)
+    if @sorted == 'dates'
+      order = { release_date: :asc } 
+    end 
+    @all_ratings = Movie.all_ratings
+    @ratings_to_show = params[:ratings] || session[:ratings] || Hash[@all_ratings.map{|rating| [rating, 1]}]
+ 
+#     if params[:sort] == 'titles'
+#       @ratings_to_show = Hash[@ratings_to_show.map { |rating| [rating, 1] }]
+#       order = {title: :asc}
+#       @title_header = 'hilite bg-warning'
+#     end
+#     if params[:sort] == 'dates'
+#       @ratings_to_show = Hash[@ratings_to_show.map { |rating| [rating, 1] }]
+#       order = {release_date: :asc}
+#       @release_date_header = 'hilite bg-warning'
+#     end
+#     @movies = Movie.with_ratings(@ratings_to_show.keys).order(order)
+    
+    if params[:sort] != session[:sort] or params[:ratings] != session[:ratings]
+      session[:sort] = @sorted
+      session[:ratings] = @ratings_to_show
+      redirect_to sort: @sorted, ratings: @ratings_to_show and return
+    end
+
+    @movies = Movie.where(rating: @ratings_to_show.keys).order(order)
   end
 
   def new
