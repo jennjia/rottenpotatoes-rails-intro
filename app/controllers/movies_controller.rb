@@ -35,7 +35,7 @@ class MoviesController < ApplicationController
       redirect_to sort: @sorted, ratings: @ratings_to_show and return
     end
 
-    @movies = Movie.where(rating: @ratings_to_show.keys).order(order)
+    @movies = Movie.with_ratings(@ratings_to_show.keys).order(order)
   end
 
   def new
